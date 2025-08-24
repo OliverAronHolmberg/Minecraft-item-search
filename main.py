@@ -9,22 +9,6 @@ world_input = input("Enter the path of your minecraft world: ")
 item_id = input("Enter the Item ID you want to find, (e.g. minecraft:diamond): ")
 
 
-def get_count(item):
-    count_tag = item.get("Count", nbtlib.tag.Byte(1))
-    if count_tag == None:
-        return 1
-    if hasattr(count_tag, "value"):
-        return int(count_tag.value)
-    return int(count_tag)
-
-def get_slot(item):
-    slot_tag = item.get("Slot")
-    if slot_tag is None:
-        return 0
-    if hasattr(slot_tag, "value"):
-        return int(slot_tag.value)
-    return int(slot_tag)
-
 
 
 
@@ -47,21 +31,17 @@ for filename in os.listdir(playerdata_path):
         
             for item in nbt["Inventory"]:
                 if item["id"] == item_id:
-                    count_tag = item.get("Count", nbtlib.tag.Byte(1))
-                    count = int(count_tag.value if hasattr(count_tag, "value") else count_tag)
                     player_uuid = filename[:-4]
                     uuid_to_name = {entry['uuid']: entry['name'] for entry in usercache}
                     player_name = uuid_to_name.get(player_uuid, player_uuid)
-                    print(f"Found {count}x {item_id} in player {player_name}'s Inventory at {pos_tuple}")
+                    print(f"Found {item_id} in player {player_name}'s Inventory at {pos_tuple}")
 
             for item in nbt.get("EnderItems", []):
                 if item["id"] == item_id:
-                    count_tag = item.get("Count", nbtlib.tag.Byte(1))
-                    count = int(count_tag.value if hasattr(count_tag, "value") else count_tag)
                     player_uuid = filename[:-4]
                     uuid_to_name = {entry['uuid']: entry['name'] for entry in usercache}
                     player_name = uuid_to_name.get(player_uuid, player_uuid)
-                    print(f"Found {count}x stack of {item_id} in player {player_name}'s Ender Chest at {pos_tuple}")
+                    print(f"Found {item_id} in player {player_name}'s Ender Chest at {pos_tuple}")
 
             
 
@@ -110,18 +90,13 @@ for region_file in os.listdir(region_folder):
 
             block_entities = nbt_file.get("block_entities", []) or nbt_file.get("tile_entities", [])
             for be in block_entities:
-                x = int(be.get("x", 0).value if hasattr(be.get("x"), "value") else be.get("x", 0))
-                y = int(be.get("y", 0).value if hasattr(be.get("y"), "value") else be.get("y", 0))
-                z = int(be.get("z", 0).value if hasattr(be.get("z"), "value") else be.get("z", 0))
+                x = int(be.get("x", 0))
+                y = int(be.get("y", 0))
+                z = int(be.get("z", 0))
                 coords = f"({x},{y},{z})"
-
-                items = be.get("Items", [])
-                for item in items:
-                    item_name_tag = item.get("id")
-                    item_name = item_name_tag.value if hasattr(item_name_tag, "value") else str(item_name_tag)
-                    count_tag = item.get("Count", 1)
-                    count = int(count_tag.value) if hasattr(count_tag, "value") else int(count_tag)
+                
 
 
-                    if item_name == item_id:
-                        print(f"Found {count}x stack of{item_id} in container at {coords}")
+                print(f"Found {item_id} in container at {coords}")
+
+                
