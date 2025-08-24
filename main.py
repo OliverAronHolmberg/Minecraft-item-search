@@ -99,4 +99,4 @@ for region_file in os.listdir(region_folder):
                     count = int(count_tag.value) if hasattr(count_tag, "value") else int(count_tag)
 
                     if item_name == item_id:
-                        print(f"Found stack of {count}x {item_id} in container at {coords}")
+                        print(f"Found {count}x stack of{item_id} in container at {coords}")
