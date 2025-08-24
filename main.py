@@ -1,6 +1,7 @@
-import nbtlib
-import anvil
 import os
+import zlib
+from io import BytesIO
+import nbtlib
 
 world_input = input("Enter the path of your minecraft world: ")
 
@@ -26,45 +27,76 @@ for filename in os.listdir(playerdata_path):
             for item in nbt["Inventory"]:
                 if item["id"] == item_id:
                     found = True
-                    count = int(item["Count"])
+                    count_tag = item.get("Count", nbtlib.tag.Byte(1))
+                    count = int(count_tag.value if hasattr(count_tag, "value") else count_tag)
                     print(f"Found {count}x {item_id} in {filename}'s Inventory at {pos_tuple}")
 
             for item in nbt.get("EnderItems", []):
                 if item["id"] == item_id:
                     found = True
-                    count = int(item["Count"])
+                    count_tag = item.get("Count", nbtlib.tag.Byte(1))
+                    count = int(count_tag.value if hasattr(count_tag, "value") else count_tag)
                     print(f"Found {count}x {item_id} in {filename}'s Ender Chest at {pos_tuple}")
 
             if not found:
                 print(f"No {item_id} found in {filename}")
 
         except Exception as e:
-            print(f"Error reading {filename}: {e}")
+            pass
 
 
 print("\nSearching World Containers (chest, barrels, etc.)")
-region_path = os.path.join(world_input, "region")
 
-for filename in os.listdir(region_path):
-    if filename.endswith(".mca"):
-        filepath = os.path.join(region_path, filename)
-        try:
-            region = anvil.Region.from_file(filepath)
 
-            for x in range(32):
-                for z in range(32):
-                    try:
-                        chunk = region.get_chunk(x, z)
+region_folder = os.path.join(world_input, "region")
 
-                        for tile in chunk.tile_entities:
-                            if "Items" in tile:
-                                for item in tile["Items"]:
-                                    if item["id"] == item_id:
-                                        coords = (tile["x"].value, tile["y"].value, tile["z"].value)
-                                        count = int(item["Count"].value)
-                                        print(f"Found {count}x {item_id} in container at {coords}")
-                    except Exception:
-                        pass
-        except Exception:
-            print(f"Error reading region {filename}: {e}")
-    
+for region_file in os.listdir(region_folder):
+    if not region_file.endswith(".mca"):
+        continue
+    region_path = os.path.join(region_folder, region_file)
+
+    with open(region_path, "rb") as f:
+        offsets = f.read(4096)
+        for i in range(1024):
+            offset = int.from_bytes(offsets[i*4:i*4+3], "big")
+            sector_count = offsets[i*4+3]
+
+            if offset == 0 or sector_count == 0:
+                continue
+
+            cx, cz = i % 32, i // 32
+            f.seek(offset * 4096)
+            length = int.from_bytes(f.read(4), "big")
+            compression_type = f.read(1)[0]
+            chunk_data = f.read(length - 1)
+
+            try:
+                if compression_type == 2:
+                    chunk_data = zlib.decompress(chunk_data)
+                elif compression_type == 1:
+                    import gzip
+                    chunk_data = gzip.decompress(chunk_data)
+            except:
+                continue
+
+            try:
+                nbt_file = nbtlib.File.parse(BytesIO(chunk_data))
+            except:
+                continue
+
+            block_entities = nbt_file.get("block_entities", []) or nbt_file.get("tile_entities", [])
+            for be in block_entities:
+                x = int(be.get("x", 0).value if hasattr(be.get("x"), "value") else be.get("x", 0))
+                y = int(be.get("y", 0).value if hasattr(be.get("y"), "value") else be.get("y", 0))
+                z = int(be.get("z", 0).value if hasattr(be.get("z"), "value") else be.get("z", 0))
+                coords = f"({x},{y},{z})"
+
+                items = be.get("Items", [])
+                for item in items:
+                    item_name_tag = item.get("id")
+                    item_name = item_name_tag.value if hasattr(item_name_tag, "value") else str(item_name_tag)
+                    count_tag = item.get("Count", 1)
+                    count = count_tag.value if hasattr(count_tag, "value") else int(count_tag)
+
+                    if item_name == item_id:
+                        print(f"Found {count}x {item_id} in container at {coords}")
