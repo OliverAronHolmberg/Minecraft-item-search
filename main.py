@@ -97,6 +97,14 @@ for region_file in os.listdir(region_folder):
                 
 
 
-                print(f"Found {item_id} in container at {coords}")
+                items = be.get("Items", [])
+                for item in items:
+                    item_name_tag = item.get("id")
+                    item_name = item_name_tag.value if hasattr(item_name_tag, "value") else str(item_name_tag)
+                    count_tag = item.get("Count", 1)
+                    count = int(count_tag.value) if hasattr(count_tag, "value") else int(count_tag)
+
+                    if item_name == item_id:
+                        print(f"Found {item_id} in container at {coords}")
 
                 
