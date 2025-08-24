@@ -29,14 +29,14 @@ for filename in os.listdir(playerdata_path):
                     found = True
                     count_tag = item.get("Count", nbtlib.tag.Byte(1))
                     count = int(count_tag.value if hasattr(count_tag, "value") else count_tag)
-                    print(f"Found {count}x {item_id} in {filename}'s Inventory at {pos_tuple}")
+                    print(f"Found {count}x {item_id} in player {filename}'s Inventory at {pos_tuple}")
 
             for item in nbt.get("EnderItems", []):
                 if item["id"] == item_id:
                     found = True
                     count_tag = item.get("Count", nbtlib.tag.Byte(1))
                     count = int(count_tag.value if hasattr(count_tag, "value") else count_tag)
-                    print(f"Found {count}x stack of {item_id} in {filename}'s Ender Chest at {pos_tuple}")
+                    print(f"Found {count}x stack of {item_id} in player {filename}'s Ender Chest at {pos_tuple}")
 
             if not found:
                 print(f"No {item_id} found in {filename}")
