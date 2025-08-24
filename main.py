@@ -23,7 +23,7 @@ for filename in os.listdir(playerdata_path):
             pos_tuple = (float(pos[0]), float(pos[1]), float(pos[2]))
 
             found = False
-
+        
             for item in nbt["Inventory"]:
                 if item["id"] == item_id:
                     found = True
@@ -36,7 +36,7 @@ for filename in os.listdir(playerdata_path):
                     found = True
                     count_tag = item.get("Count", nbtlib.tag.Byte(1))
                     count = int(count_tag.value if hasattr(count_tag, "value") else count_tag)
-                    print(f"Found {count}x {item_id} in {filename}'s Ender Chest at {pos_tuple}")
+                    print(f"Found {count}x stack of {item_id} in {filename}'s Ender Chest at {pos_tuple}")
 
             if not found:
                 print(f"No {item_id} found in {filename}")
@@ -96,7 +96,7 @@ for region_file in os.listdir(region_folder):
                     item_name_tag = item.get("id")
                     item_name = item_name_tag.value if hasattr(item_name_tag, "value") else str(item_name_tag)
                     count_tag = item.get("Count", 1)
-                    count = count_tag.value if hasattr(count_tag, "value") else int(count_tag)
+                    count = int(count_tag.value) if hasattr(count_tag, "value") else int(count_tag)
 
                     if item_name == item_id:
-                        print(f"Found {count}x {item_id} in container at {coords}")
+                        print(f"Found stack of {count}x {item_id} in container at {coords}")
