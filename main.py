@@ -33,13 +33,13 @@ for filename in os.listdir(playerdata_path):
                 if item["id"] == item_id:
                     found = True
                     count = int(item["Count"])
-                    print(f"Found {count}x {item_id} in {filename}'s Ender Cheast at {pos_tuple}")
+                    print(f"Found {count}x {item_id} in {filename}'s Ender Chest at {pos_tuple}")
 
             if not found:
                 print(f"No {item_id} found in {filename}")
 
         except Exception as e:
-            print("Errpr reading {filename}: {e}")
+            print(f"Error reading {filename}: {e}")
 
 
 print("\nSearching World Containers (chest, barrels, etc.)")
@@ -66,5 +66,5 @@ for filename in os.listdir(region_path):
                     except Exception:
                         pass
         except Exception:
-            print("Error reading at region {filename}: {e}")
+            print(f"Error reading region {filename}: {e}")
     
