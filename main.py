@@ -2,13 +2,15 @@ import os
 import zlib
 from io import BytesIO
 import nbtlib
+import json
 
 world_input = input("Enter the path of your minecraft world: ")
 
 item_id = input("Enter the Item ID you want to find, (e.g. minecraft:diamond): ")
 
 
-
+with open(os.path.expanduser(r"C:\Users\Olive\AppData\Roaming\.minecraft\usercache.json"), "r") as f:
+    usercache = json.load(f)
 print("\nSearching player Inventories")
 playerdata_path = os.path.join(world_input, "playerdata")
 
@@ -29,14 +31,20 @@ for filename in os.listdir(playerdata_path):
                     found = True
                     count_tag = item.get("Count", nbtlib.tag.Byte(1))
                     count = int(count_tag.value if hasattr(count_tag, "value") else count_tag)
-                    print(f"Found {count}x {item_id} in player {filename}'s Inventory at {pos_tuple}")
+                    player_uuid = filename[:-4]
+                    uuid_to_name = {entry['uuid']: entry['name'] for entry in usercache}
+                    player_name = uuid_to_name.get(player_uuid, player_uuid)
+                    print(f"Found {count}x {item_id} in player {player_name}'s Inventory at {pos_tuple}")
 
             for item in nbt.get("EnderItems", []):
                 if item["id"] == item_id:
                     found = True
                     count_tag = item.get("Count", nbtlib.tag.Byte(1))
                     count = int(count_tag.value if hasattr(count_tag, "value") else count_tag)
-                    print(f"Found {count}x stack of {item_id} in player {filename}'s Ender Chest at {pos_tuple}")
+                    player_uuid = filename[:-4]
+                    uuid_to_name = {entry['uuid']: entry['name'] for entry in usercache}
+                    player_name = uuid_to_name.get(player_uuid, player_uuid)
+                    print(f"Found {count}x stack of {item_id} in player {player_name}'s Ender Chest at {pos_tuple}")
 
             if not found:
                 print(f"No {item_id} found in {filename}")
